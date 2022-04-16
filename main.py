@@ -11,13 +11,21 @@ results = sp.playlist_tracks(pl_uri)["items"]
 i=1
 for track in results:
     print(i)
+    track_uri = track["track"]["uri"]
+
     #Track name
     track_name = track["track"]["name"]
     print("Name: %s" % (track_name))
     
-    #Name, popularity, genre
+    #Main Artist
+    artist_uri = track["track"]["artists"][0]["uri"]
+    artist_info = sp.artist(artist_uri)
+
+    #Name and genre
     artist_name = track["track"]["artists"][0]["name"]
     print("Artist: %s" % (artist_name))
+    artist_genres = artist_info["genres"]
+    print("Genre: %s" % (artist_genres))
     
     #Popularity of the track
     track_pop = track["track"]["popularity"]
@@ -26,8 +34,9 @@ for track in results:
     track_date = track["track"]['album']["release_date"]
     print("Release date: %s" % (track_date))
 
-    track_duration = track['track']['duration_ms']
-    print("Track duration: %s" % (track_duration))
+    features = sp.audio_features(track_uri)[0]
+    track_energy = features['energy']
+    print("Track energy: %s" % (track_energy))
 
     print('\n')
     i += 1
