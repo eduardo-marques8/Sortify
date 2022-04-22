@@ -1,7 +1,4 @@
-
 from distutils.log import error
-
-
 class Track:
     def __init__(self, _name, _artist, _popularity, _releaseDate):
         self.name = _name

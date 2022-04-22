@@ -1,15 +1,23 @@
+from operator import attrgetter
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import cred
 from models import *
+from features import setupPlaylistFeatures
 
 pl_uri = 'spotify:playlist:37i9dQZF1DX0XUsuxWHRQd'
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.client_ID, client_secret=cred.client_SECRET,
-                                               redirect_uri=cred.redirect_url))
+sp = spotipy.Spotify(
+    auth_manager=SpotifyOAuth(
+        client_id=cred.client_ID, 
+        client_secret=cred.client_SECRET,
+        redirect_uri=cred.redirect_url
+    )
+)
 
 results = sp.playlist_tracks(pl_uri)["items"]
 playlist = Playlist([])
+setupPlaylistFeatures()
 i=1
 
 for track in results:
@@ -36,5 +44,16 @@ for track in results:
     track = Track(name, artist_name, popularity, date)
     playlist.addTrack(track)
 
-playlist.printTracksDetail()
+""" playlist.printTracksDetail()
 #playlist.printTracksOrder()
+
+Playlist.sort_by_most_listened_by_artist()
+Playlist.sort_by_most_language()
+Playlist.sort_by_most_weekly_most_listened()
+Playlist.sort_by_release_date() """
+
+""" for i in range(len(playlist.tracks)):
+    print(playlist['popularity'][i]) """
+
+playlist.sort_by_popularity()
+playlist.printTracksDetail()
