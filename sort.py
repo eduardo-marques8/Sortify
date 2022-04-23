@@ -11,24 +11,24 @@ def sortArray(array, key = None):
         quicksort(array, 0, len(array)-1)
 
 def quicksortFromKey(array, key, inicio, fim):
+    getKeyArray = attrgetter(key)
+    keyArray = list(map(getKeyArray, array))
+    # Se as keys forem um array de string, remove a capitalização
+    if type(keyArray[0]) is str:
+        for i in range(len(keyArray)):
+            keyArray[i] = keyArray[i].lower()
+
     l = [inicio, fim]
 
     while len(l) > 0:
       novo_inicio = l.pop(0) # Armazena o primeiro elemento da lista e o remove --> Limite esquerdo
       novo_fim = l.pop(0) # Armazena o segundo (agora primeiro) elemento da lista e o remove --> Limite direito
       if novo_inicio < novo_fim:
-          pivo = particionaFromKey(array, key, novo_inicio, novo_fim)
+          pivo = particionaFromKey(array, keyArray, novo_inicio, novo_fim)
           l.extend([novo_inicio, pivo - 1, pivo + 1, novo_fim])
           # Esses 4 parâmetros são respectivamente: limites esquerdo e direito da subárvore esquerda, e limites esquerdo e direito da subárvore direita
 
-def particionaFromKey(array, key, esquerda, direita):
-    getKeyArray = attrgetter(key)
-    keyArray = list(map(getKeyArray, array))
-    # Se as keys forem um array de string, remove a capitalização
-    if type(keyArray[0]) is str:
-        for i in range(len(keyArray)):
-            keyArray[i].lower()
-
+def particionaFromKey(array, keyArray, esquerda, direita):
     ind_mediana = busca_mediana(keyArray, esquerda, direita) # Mediana entre os 3 elementos (inicio, meio e fim)
     
     if keyArray[ind_mediana] != keyArray[direita]:
@@ -53,12 +53,12 @@ def particionaFromKey(array, key, esquerda, direita):
     return (i + 1)
 
 def quicksort(array, inicio, fim):
-    l = [inicio, fim]
-
     # Se as keys forem um array de string, remove a capitalização
     if type(array[0]) is str:
         for i in range(len(array)):
             array[i] = array[i].lower()
+
+    l = [inicio, fim]
 
     while len(l) > 0:
       novo_inicio = l.pop(0) # Armazena o primeiro elemento da lista e o remove --> Limite esquerdo

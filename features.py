@@ -2,6 +2,10 @@ from models import Playlist
 from operator import attrgetter
 from sort import sortArray
 
+def sort_by_name(self):
+    print("Classificando a playlist pela ordem alfabética do nome das músicas.")
+    sortArray(self.tracks, 'name')
+
 def sort_by_popularity(self):
     print("Classificando a playlist por ordem de popularidade.")
     sortArray(self.tracks, 'popularity')
@@ -37,6 +41,7 @@ def classify_by_artist(self):
     self.tracks = classifiedTracks
 
 def setupPlaylistFeatures():
+    Playlist.sort_by_name = sort_by_name
     Playlist.sort_by_popularity = sort_by_popularity
     Playlist.sort_by_most_language = sort_by_most_language
     Playlist.sort_by_most_weekly_most_listened = sort_by_most_weekly_most_listened

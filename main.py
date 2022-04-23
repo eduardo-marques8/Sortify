@@ -47,6 +47,9 @@ for track in results:
 # Teste das features
 playlist.printTracksDetail()
 print("-------------------------------------------")
+playlist.sort_by_name()
+playlist.printTracksDetail()
+print("-------------------------------------------")
 playlist.sort_by_popularity()
 playlist.printTracksDetail()
 print("-------------------------------------------")
