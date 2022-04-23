@@ -17,7 +17,7 @@ class Playlist:
     
     def printTracksDetail(self):
         for track, i in zip(self.tracks, range(len(self.tracks))):
-            print(f'Track #{i} -> {track.name} from {track.artist}')
+            print(f"Track #{i} -> '{track.name}' from '{track.artist}'")
             try:
                 print(f'     --> Popularity: {track.popularity}')
                 print(f'     --> Release date: {track.releaseDate}')

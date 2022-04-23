@@ -44,16 +44,15 @@ for track in results:
     track = Track(name, artist_name, popularity, date)
     playlist.addTrack(track)
 
-""" playlist.printTracksDetail()
-#playlist.printTracksOrder()
-
-Playlist.sort_by_most_listened_by_artist()
-Playlist.sort_by_most_language()
-Playlist.sort_by_most_weekly_most_listened()
-Playlist.sort_by_release_date() """
-
-""" for i in range(len(playlist.tracks)):
-    print(playlist['popularity'][i]) """
-
+# Teste das features
+playlist.printTracksDetail()
+print("-------------------------------------------")
 playlist.sort_by_popularity()
 playlist.printTracksDetail()
+print("-------------------------------------------")
+playlist.sort_by_release_date()
+playlist.printTracksDetail()
+print("-------------------------------------------")
+playlist.classify_by_artist()
+playlist.printTracksDetail()
+print("-------------------------------------------")
