@@ -1,24 +1,60 @@
-from models import Playlist
 from operator import attrgetter
 from sort import sortArray
+import pickle
+from models import *
+from trees import BTree, BTreeNode, Trie, TrieNode
+import os
 
-def sort_by_name(self):
-    print("Classificando a playlist pela ordem alfabética do nome das músicas.")
-    sortArray(self.tracks, 'name')
+def sort_feature(file, order):
+    open_file = open(file, 'rb')
+    unpickler = pickle.Unpickler(open_file)
+    array = []
 
-def sort_by_popularity(self):
-    print("Classificando a playlist por ordem de popularidade.")
-    sortArray(self.tracks, 'popularity')
+    while True:
+        try:
+            pic = file_to_tree(unpickler)
+            array.append(pic)
+        except EOFError:
+            break
 
-def sort_by_most_language(self):
-    print("WIP")
+    open_file.close()
+    os.remove(file)
+    sortArray(array, order)
 
-def sort_by_most_weekly_most_listened(self):
-    print("WIP")
+    b_tree = BTree(len(array))
 
-def sort_by_release_date(self):
-    print("Classificando a playlist por ordem de data de lançamento.")
-    sortArray(self.tracks, 'releaseDate')
+    for e in array:
+        b_tree.insert((e[0], e[1]))
+    
+    b_tree.btree_to_file(b_tree.root, file = open(file, 'wb'), reverse=True if order == 'd' else False)
+    print("Done.\n")
+
+def _charToIndex(ch):
+    return ord(ch)-ord(' ')
+
+def search_feature(file, key):
+    open_file = open(file, 'rb')
+    unpickler = pickle.Unpickler(open_file)
+    tree = Trie()
+
+    while True:
+        try:
+            pic = file_to_tree(unpickler)
+            for e in pic[1]:
+                tree.insert(pic[0], e)
+        except EOFError:
+            break
+        
+    root = tree.root
+    pCrawl = root
+    length = len(key)
+    for level in range(length):
+        index = _charToIndex(key[level])
+        if not pCrawl.children[index]:
+            return False
+        pCrawl = pCrawl.children[index]
+ 
+    return pCrawl.value
 
 def classify_by_artist(self):
     print("Classificando a playlist por artista (em ordem alfabética).")
@@ -39,11 +75,3 @@ def classify_by_artist(self):
             i+=1
     # Substitui o array do objeto com o novo array classificado
     self.tracks = classifiedTracks
-
-def setupPlaylistFeatures():
-    Playlist.sort_by_name = sort_by_name
-    Playlist.sort_by_popularity = sort_by_popularity
-    Playlist.sort_by_most_language = sort_by_most_language
-    Playlist.sort_by_most_weekly_most_listened = sort_by_most_weekly_most_listened
-    Playlist.sort_by_release_date = sort_by_release_date
-    Playlist.classify_by_artist = classify_by_artist
