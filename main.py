@@ -1,11 +1,10 @@
-from lib2to3.pgen2.token import NAME
-from header import (NAMES_FILE, pickle, ORIGINAL_FILE, PLAYLIST_FILE, ARTISTS_FILE, 
+from includes.header import (NAMES_FILE, pickle, ORIGINAL_FILE, PLAYLIST_FILE, ARTISTS_FILE, 
 ARTIST_POPULARITY_FILE, GENRE_FILE, TRACK_GENRE_FILE, POPULARITY_FILE, 
 DATE_FILE, OFFSET_FILE, sp, pl_uri, os, path)
-from features import (sort_feature, search_feature, search_to_delete)
-from models import (Track, printTracksDetail)
-from trees import (BTree, Trie)
-from functions import input_loop
+from codes.features import (sort_feature, search_feature, search_to_update)
+from structs.models import (Track, printTracksDetail)
+from structs.trees import (BTree, Trie)
+from codes.functions import input_loop
 
 def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset):
     results = sp.playlist_tracks(pl_uri, offset = fetch_offset)["items"]

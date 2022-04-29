@@ -1,7 +1,7 @@
-from header import (PLAYLIST_FILE, pickle, os)
-from trees import (BTree, Trie)
-from sort import sortArray
-from functions import (charToIndex, file_to_tree)
+from includes.header import (PLAYLIST_FILE, pickle, os)
+from structs.trees import (BTree, Trie)
+from codes.sort import sortArray
+from codes.functions import (charToIndex, file_to_tree)
 
 def sort_feature(file, order):
     open_file = open(file, 'rb')
@@ -51,7 +51,7 @@ def search_feature(file, key):
  
     return pCrawl.value
 
-def search_to_delete(type, file, key):
+def search_to_update(type, file, key):
     if type == 'trie':
         open_file = open(file, 'rb')
         unpickler = pickle.Unpickler(open_file)
@@ -66,7 +66,6 @@ def search_to_delete(type, file, key):
                 break
             
         open_file.close()
-        os.remove(file)
 
         root = tree.root
         pCrawl = root
@@ -77,9 +76,8 @@ def search_to_delete(type, file, key):
                 return False
             pCrawl = pCrawl.children[index]
     
-        pCrawl.isEndOfWord = False
+        pCrawl.value = key
         tree.trie_to_file(file = open(file, 'wb'))
-        return pCrawl.value
     else:
         open_file = open(file, 'rb')
         unpickler = pickle.Unpickler(open_file)
@@ -93,7 +91,6 @@ def search_to_delete(type, file, key):
                 break
 
         open_file.close()
-        os.remove(file)
 
         b_tree = BTree(10)
 

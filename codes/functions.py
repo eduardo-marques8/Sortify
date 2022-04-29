@@ -1,5 +1,5 @@
-from header import (pickle, os)
-from trees import (BTree, Trie)
+from includes.header import (pickle, os)
+from structs.trees import (BTree, Trie)
 
 def charToIndex(ch):
     return ord(ch)-ord(' ')
