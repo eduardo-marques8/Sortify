@@ -1,14 +1,7 @@
-from operator import attrgetter
-from urllib.parse import _NetlocResultMixinBase
+from header import attrgetter
 
-
-
-def sortArray(array, order, key = None):
-    if type(key) is str:
-        # Ordena o array de objetos de acordo com o atributo {key} do objeto
-        quicksortFromKey(array, key, 0, len(array)-1)
-    else:
-        quicksort(array, 0, len(array)-1, order)
+def sortArray(array, order):
+    quicksort(array, 0, len(array)-1, order)
 
 def quicksortFromKey(array, key, inicio, fim):
     getKeyArray = attrgetter(key)

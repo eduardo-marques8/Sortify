@@ -1,7 +1,5 @@
-from distutils.log import error
-import pickle
-
-from numpy import isin
+from header import (pickle, error)
+from functions import (file_to_tree, pickle_offset)
 
 class Track:
     def __init__(self, _name, _artist, _genre, _popularity, _releaseDate):
@@ -10,14 +8,6 @@ class Track:
         self.genre = _genre
         self.popularity = _popularity
         self.releaseDate = _releaseDate
-
-def file_to_tree(unpickler):
-    return unpickler.load()
-
-def pickle_offset(offset, unpickler):
-    for i in range(offset):
-        unpickler.load()
-    return unpickler.load()
 
 def print_track(play_file, offset, i):
     unpickler_play = pickle.Unpickler(play_file)
@@ -31,8 +21,8 @@ def print_track(play_file, offset, i):
     except error:
         print(error)
 
+
 def printTracksDetail(file, sort):
-    print('\n')
     sort_file = open(sort, 'rb')
     unpickler_sort = pickle.Unpickler(sort_file)
     i=0
@@ -51,6 +41,5 @@ def printTracksDetail(file, sort):
                     i += 1
         except EOFError:
             break
-    print('\n')
     sort_file.close()
     play_file.close()

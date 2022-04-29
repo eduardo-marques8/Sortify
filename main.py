@@ -1,128 +1,63 @@
-from cmath import phase
-from operator import attrgetter
-from matplotlib import artist
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-import cred
-from models import *
-import pickle
-from trees import *
-from features import *
-import os
+from lib2to3.pgen2.token import NAME
+from header import (NAMES_FILE, pickle, ORIGINAL_FILE, PLAYLIST_FILE, ARTISTS_FILE, 
+ARTIST_POPULARITY_FILE, GENRE_FILE, TRACK_GENRE_FILE, POPULARITY_FILE, 
+DATE_FILE, OFFSET_FILE, sp, pl_uri, os, path)
+from features import (sort_feature, search_feature, search_to_delete)
+from models import (Track, printTracksDetail)
+from trees import (BTree, Trie)
+from functions import input_loop
 
-path = 'data'
-ORIGINAL_FILE = os.path.join(path, 'orig_file.bin')
-PLAYLIST_FILE = os.path.join(path, 'playlist.bin')
-ARTISTS_FILE = os.path.join(path, 'arts_file.bin')
-ARTIST_POPULARITY_FILE = os.path.join(path, 'art_pop_file.bin')
-GENRE_FILE = os.path.join(path, 'genre_file.bin')
-TRACK_GENRE_FILE = os.path.join(path, 'trk_gen_file.bin')
-POPULARITY_FILE = os.path.join(path, 'pop_file.bin')
-DATE_FILE = os.path.join(path, 'date_file.bin')
-
-pl_uri = 'spotify:playlist:674SUzRPvJhMtdbm1w4c3Q'
-
-sp = spotipy.Spotify(
-    auth_manager=SpotifyOAuth(
-    client_id=cred.client_ID, 
-    client_secret=cred.client_SECRET,
-    redirect_uri=cred.redirect_url
-    )
-)
-
-def input_loop(phrase, ch1, ch2):
-    while True:
-        order = input(phrase)
-        if order != ch1 and order != ch2:
-            print("Wrong. Type again.\n")
-        else:
-            break
-    return order
-
-def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree):
-    results = sp.playlist_tracks(pl_uri)["items"]
-    playlist_file = open(PLAYLIST_FILE, 'wb')
+def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset):
+    results = sp.playlist_tracks(pl_uri, offset = fetch_offset)["items"]
+    playlist_file = open(PLAYLIST_FILE, 'ab')
     pickler = pickle.Pickler(playlist_file)
-    offset = 0
+    offset = fetch_offset
 
-    for track in results:
-        track_uri = track["track"]["uri"]
+    if not results:
+        print("No more tracks on playlist.\n")
+    else:
+        for track in results:
+            #Track name
+            name = track["track"]["name"]
+            
+            #Main Artist
+            artist_uri = track["track"]["artists"][0]["uri"]
+            artist_info = sp.artist(artist_uri)
 
-        #Track name
-        name = track["track"]["name"]
+            #Name and genre
+            artist_name = track["track"]["artists"][0]["name"]
+
+            try:
+                artist_genre = artist_info["genres"][0]
+            except IndexError:
+                artist_genre = "not specified"
+            
+            #Popularity of the track
+            popularity = track["track"]["popularity"]
+
+            #Release date
+            date = track["track"]['album']["release_date"]
+
+            track = Track(name, artist_name, artist_genre, popularity, date)
+            orig_tree.insert((offset, offset))
+            arts_tree.insert(artist_name, (popularity, offset))
+            genre_tree.insert(artist_genre, offset)
+            pop_tree.insert((popularity, offset))
+            date_tree.insert((date, offset))
+            names_tree.insert(name, offset)
+            offset += 1
+            pickler.dump(track)
+
+    orig_tree.btree_to_file(orig_tree.root, file = open(ORIGINAL_FILE, 'ab'))
+    arts_tree.trie_to_file(file = open(ARTISTS_FILE, 'ab'))
+    genre_tree.trie_to_file(file = open(GENRE_FILE, 'ab'))
+    pop_tree.btree_to_file(pop_tree.root, file = open(POPULARITY_FILE, 'ab'))
+    date_tree.btree_to_file(date_tree.root, file = open(DATE_FILE, 'ab'))
+    names_tree.trie_to_file(file = open(NAMES_FILE, 'ab'))
         
-        #Main Artist
-        artist_uri = track["track"]["artists"][0]["uri"]
-        artist_info = sp.artist(artist_uri)
-
-        #Name and genre
-        artist_name = track["track"]["artists"][0]["name"]
-
-        try:
-            artist_genre = artist_info["genres"][0]
-        except IndexError:
-            artist_genre = "not specified"
-        
-        #Popularity of the track
-        popularity = track["track"]["popularity"]
-
-        #Release date
-        date = track["track"]['album']["release_date"]
-
-        track = Track(name, artist_name, artist_genre, popularity, date)
-        orig_tree.insert((offset, offset))
-        arts_tree.insert(artist_name, (popularity, offset))
-        genre_tree.insert(artist_genre, offset)
-        pop_tree.insert((popularity, offset))
-        date_tree.insert((date, offset))
-        offset += 1
-        pickler.dump(track)
-        
-    orig_tree.btree_to_file(orig_tree.root, file = open(ORIGINAL_FILE, 'wb'))
-    arts_tree.trie_to_file(file = open(ARTISTS_FILE, 'wb'))
-    genre_tree.trie_to_file(file = open(GENRE_FILE, 'wb'))
-    pop_tree.btree_to_file(pop_tree.root, file = open(POPULARITY_FILE, 'wb'))
-    date_tree.btree_to_file(date_tree.root, file = open(DATE_FILE, 'wb'))
     playlist_file.close()
     return offset
-'''
-def fetch_more_data(orig_tree, pop_tree, fetch_offset):
-    results = sp.playlist_tracks(pl_uri, offset=fetch_offset)["items"]
-    playlist_file = open(PLAYLIST_FILE, 'wb')
-    pickler = pickle.Pickler(playlist_file)
 
-    for track in results:
-        track_uri = track["track"]["uri"]
-
-        #Track name
-        name = track["track"]["name"]
-        
-        #Main Artist
-        artist_uri = track["track"]["artists"][0]["uri"]
-        artist_info = sp.artist(artist_uri)
-
-        #Name and genre
-        artist_name = track["track"]["artists"][0]["name"]
-
-        artist_genres = artist_info["genres"]
-        
-        #Popularity of the track
-        popularity = track["track"]["popularity"]
-
-        #Release date
-        date = track["track"]['album']["release_date"]
-
-        track = Track(name, artist_name, popularity, date)
-        orig_tree.insert((fetch_offset, fetch_offset))
-        pop_tree.insert((popularity, fetch_offset))
-        fetch_offset += 1
-        pickler.dump(track)
-        
-    orig_tree.btree_to_file(orig_tree.root, file = open(ORIGINAL_FILE, 'wb'))
-    pop_tree.btree_to_file(pop_tree.root, file = open(POPULARITY_FILE, 'wb'))
-    playlist_file.close()
-    return fetch_offset
-'''
 def main():
     fetch_offset = 0
 
@@ -133,12 +68,16 @@ def main():
         genre_file = open(GENRE_FILE, 'rb')
         pop_file = open(POPULARITY_FILE, 'rb')
         date_file = open(DATE_FILE, 'rb')
+        names_file = open(NAMES_FILE, 'rb')
         playlist_file.close()
         orig_file.close()
         arts_file.close()
         genre_file.close()
         pop_file.close()
         date_file.close()
+        names_file.close()
+        with open(OFFSET_FILE, 'rb') as file:
+            fetch_offset = int.from_bytes(file.read(), byteorder='big')
     except FileNotFoundError:
         os.mkdir(path)
         orig_tree = BTree(10)
@@ -146,8 +85,11 @@ def main():
         genre_tree = Trie()
         pop_tree = BTree(10)
         date_tree = BTree(10)
+        names_tree = Trie()
         print("Fetching API data ...")
-        fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree)
+        fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset)
+        with open(OFFSET_FILE, 'wb') as file:
+            file.write((fetch_offset).to_bytes(24, byteorder='big', signed=False))
         print("Done!\n")
 
     print("Welcome to Sortify!")
@@ -160,14 +102,14 @@ def main():
         print("\t - 3 - Search or classify tracks by genre;")
         print("\t - 4 - Classify playlist by week's most listened;")
         print("\t - 5 - Classify playlist's tracks by release date;")
-        #print("\t - 6 - Add more data;")
-        #print("\t - 7 - Remove data;")
-        #print("\t - 8 - Update data;")
+        print("\t - 6 - Add more data;")
         print("\t - any - Quit.")
         op = input("Choose an option: ")
 
         if op == '1':
+            print('\n')
             printTracksDetail(PLAYLIST_FILE, last_sort)
+            print('\n')
         elif op == '2':
             key = input("Who are you searching for? ")
             value = search_feature(ARTISTS_FILE, key)
@@ -213,11 +155,16 @@ def main():
             sort_feature(DATE_FILE, order)
             last_sort = DATE_FILE
         elif op == '6':
-            print(fetch_offset)
             orig_tree = BTree(10)
+            arts_tree = Trie()
+            genre_tree = Trie()
             pop_tree = BTree(10)
+            date_tree = BTree(10)
+            names_tree = Trie()
             print("\nFetching more data ...")
-            #fetch_offset = fetch_more_data(orig_tree, pop_tree, fetch_offset)
+            fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset)
+            with open(OFFSET_FILE, 'wb') as file:
+                file.write((fetch_offset).to_bytes(24, byteorder='big', signed=False))
             print("Done.\n")
             last_sort = ORIGINAL_FILE
         else:
