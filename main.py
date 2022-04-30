@@ -131,7 +131,9 @@ def main():
                     for e in value:
                         b_tree.insert((key, e))
                     b_tree.btree_to_file(b_tree.root, file = open(TRACK_GENRE_FILE, 'wb'))
+                    print('\n')
                     printTracksDetail(PLAYLIST_FILE, TRACK_GENRE_FILE)
+                    print('\n')
                     last_sort = TRACK_GENRE_FILE
             elif choice == 'sort':
                 order = input_loop("Descending or ascending [d/a]? ", 'd', 'a')
