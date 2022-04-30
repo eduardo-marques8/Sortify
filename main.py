@@ -1,12 +1,12 @@
-from includes.header import (NAMES_FILE, pickle, ORIGINAL_FILE, PLAYLIST_FILE, ARTISTS_FILE, 
+from includes.header import (pickle, ORIGINAL_FILE, PLAYLIST_FILE, ARTISTS_FILE, 
 ARTIST_POPULARITY_FILE, GENRE_FILE, TRACK_GENRE_FILE, POPULARITY_FILE, 
 DATE_FILE, OFFSET_FILE, sp, pl_uri, os, path)
-from codes.features import (sort_feature, search_feature, search_to_update)
+from codes.features import (sort_feature, search_feature)
 from structs.models import (Track, printTracksDetail)
 from structs.trees import (BTree, Trie)
 from codes.functions import input_loop
 
-def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset):
+def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, fetch_offset):
     results = sp.playlist_tracks(pl_uri, offset = fetch_offset)["items"]
     playlist_file = open(PLAYLIST_FILE, 'ab')
     pickler = pickle.Pickler(playlist_file)
@@ -43,7 +43,6 @@ def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree
             genre_tree.insert(artist_genre, offset)
             pop_tree.insert((popularity, offset))
             date_tree.insert((date, offset))
-            names_tree.insert(name, offset)
             offset += 1
             pickler.dump(track)
 
@@ -52,7 +51,6 @@ def fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree
     genre_tree.trie_to_file(file = open(GENRE_FILE, 'ab'))
     pop_tree.btree_to_file(pop_tree.root, file = open(POPULARITY_FILE, 'ab'))
     date_tree.btree_to_file(date_tree.root, file = open(DATE_FILE, 'ab'))
-    names_tree.trie_to_file(file = open(NAMES_FILE, 'ab'))
         
     playlist_file.close()
     return offset
@@ -67,14 +65,12 @@ def main():
         genre_file = open(GENRE_FILE, 'rb')
         pop_file = open(POPULARITY_FILE, 'rb')
         date_file = open(DATE_FILE, 'rb')
-        names_file = open(NAMES_FILE, 'rb')
         playlist_file.close()
         orig_file.close()
         arts_file.close()
         genre_file.close()
         pop_file.close()
         date_file.close()
-        names_file.close()
         with open(OFFSET_FILE, 'rb') as file:
             fetch_offset = int.from_bytes(file.read(), byteorder='big')
     except FileNotFoundError:
@@ -84,9 +80,8 @@ def main():
         genre_tree = Trie()
         pop_tree = BTree(10)
         date_tree = BTree(10)
-        names_tree = Trie()
         print("Fetching API data ...")
-        fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset)
+        fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, fetch_offset)
         with open(OFFSET_FILE, 'wb') as file:
             file.write((fetch_offset).to_bytes(24, byteorder='big', signed=False))
         print("Done!\n")
@@ -159,9 +154,8 @@ def main():
             genre_tree = Trie()
             pop_tree = BTree(10)
             date_tree = BTree(10)
-            names_tree = Trie()
             print("\nFetching more data ...")
-            fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, names_tree, fetch_offset)
+            fetch_offset = fetch_data(orig_tree, arts_tree, genre_tree, pop_tree, date_tree, fetch_offset)
             with open(OFFSET_FILE, 'wb') as file:
                 file.write((fetch_offset).to_bytes(24, byteorder='big', signed=False))
             print("Done.\n")
